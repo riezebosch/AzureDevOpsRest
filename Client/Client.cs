@@ -42,5 +42,8 @@ namespace AzureDevOpsRest
                 .AppendPathSegment(request.Resource)
                 .SetQueryParams(request.QueryParams)
                 .WithBasicAuth(string.Empty, _token);
+
+        public Task<TData> PostAsync<TData>(IRequest<TData> request, object data) =>
+            Setup(request).PostJsonAsync(data).ReceiveJson<TData>();
     }
 }
