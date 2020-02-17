@@ -1,6 +1,8 @@
+using System.Collections;
 using System.Linq;
 using System.Threading.Tasks;
 using AzureDevOpsRest.Data;
+using AzureDevOpsRest.Data.WorkItems;
 using FluentAssertions;
 using Xunit;
 
@@ -8,15 +10,14 @@ namespace AzureDevOpsRest.Requests.Tests
 {
     public class WorkItemTests : IClassFixture<TestConfig>
     {
-        private readonly TestConfig _config;
+        private readonly Client _client;
 
-        public WorkItemTests(TestConfig config) => _config = config;
+        public WorkItemTests(TestConfig config) => _client = new Client(config.Organization, config.Token);
 
         [Fact]
         public async Task Query()
         {
-           var client = new Client(_config.Organization, _config.Token);
-           var result = await client.PostAsync(WorkItems.Query(), new WorkItemQuery { Query = "Select [System.Id] FROM WorkItems" });
+            var result = await _client.PostAsync(WorkItems.Query(), new WorkItemQuery { Query = "Select [System.Id] FROM WorkItems" });
 
            result.WorkItems.Should().NotBeEmpty();
            result
@@ -25,6 +26,25 @@ namespace AzureDevOpsRest.Requests.Tests
                .Id
                .Should()
                .NotBe(default);
+        }
+
+        [Fact]
+        public async Task Get()
+        {
+            var result = await _client.PostAsync(WorkItems.Query(),
+                new WorkItemQuery {Query = "Select [System.Id] FROM WorkItems"});
+
+            var item = await _client.GetAsync(WorkItems.WorkItem(result.WorkItems.First().Id, "System.Id"));
+
+            item
+                .Id
+                .Should()
+                .NotBe(default);
+
+            item
+                .Fields
+                .Should()
+                .ContainKeys("System.Id");
         }
     }
 }

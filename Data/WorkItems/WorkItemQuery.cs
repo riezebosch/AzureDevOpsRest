@@ -1,4 +1,4 @@
-namespace AzureDevOpsRest.Data
+namespace AzureDevOpsRest.Data.WorkItems
 {
     public class WorkItemQuery
     {
